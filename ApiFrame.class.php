@@ -96,7 +96,7 @@ class Frame
 	*/
     function log($logstring, $loglevel = "")
     {
-        writeTextFile('./log_' . date("j.n.Y") . '.txt', $logstring);
+       $this->writeTextFile('api_log_'.date("d_m_y").'.txt', $logstring);
     }
     
     /**
@@ -333,6 +333,9 @@ class Frame
         $ot->status = "Error";
         $ot->evaluate();
 		$ot->data = $e;
+       $date = new DateTime();
+$date = $date->format("d.m.y H:i:s");
+       $this->log( $date . " --   Error: (".$_SERVER['REMOTE_ADDR'].") Data: " . json_encode($ot));
         ob_clean ();
         exit(json_encode($ot));
 		}
@@ -356,7 +359,13 @@ class Frame
 	*/
     function writeTextFile($filename, $appendText)
     {
-        file_put_contents($filename, $appendText, FILE_APPEND);
+        //file_put_contents($filename, $appendText, FILE_APPEND);
+      // echo __DIR__ ."/" . $filename . $appendText;
+       //$_SERVER["DOCUMENT_ROOT"] ."/" .
+   $fp = fopen(  __DIR__ ."/". $filename, 'a') or die("can't open file");;
+        fwrite($fp, $appendText);
+        fwrite($fp, "\n");
+        fclose($fp);
     }
     
 	/**
@@ -371,6 +380,7 @@ class Frame
         $this->out->setEndTime(microtime(true));
         $this->out->status = $status;
         $this->out->evaluate();
+        header("Content-Type: application/json");
         echo json_encode($this->out);
         
     }
@@ -586,6 +596,9 @@ class Frame
                 if ($this->debug)
                     echo ("\n\nError: $value does not match " . $act_meth[2][$key] . "\n\n");
                 $this->error(12, "RegexError", "Regex error at Parameter \"$key\"", "handleApiUrls", "Regex error: \n Value \"$value[0]\"  does not match Pattern \"" . $value[1] . "\" ");
+                                 $date = new DateTime();
+$date = $date->format("d.m.y H:i:s");
+        $this->log( $date . " --   RegexError: Regex error: \n Value \"$value[0]\"  does not match Pattern \"" . $value[1] . "\"");
                 $this->output(null, "Error");
                 return;
             }
@@ -606,9 +619,16 @@ class Frame
             $sort_params[] = $this;
             
             try {
+                 $date = new DateTime();
+$date = $date->format("d.m.y H:i:s");
+        
                 call_user_func_array($act_meth[0], $sort_params); // call the function with parameters
+                $this->log( $date . " --   Call: ".$act_meth[0]. "  with params  " . json_encode($sort_params));
             }
             catch (Exception $x) {
+                 $date = new DateTime();
+$date = $date->format("d.m.y H:i:s");
+        $this->log( $date . " --   Exception:  Exit ".$act_meth[0]. "  with exception  " . json_encode($x));
                 $this->error($x->getCode(), $x->getMessage(), "Error", $act_meth[0], $x->getMessage() . " at " . $x->getFile() . ":" . $x->getLine() . " trace: " . $x->getTraceAsString());
                 $this->output(null, "Error");
                  $this->setHttpStatusCode(500);
@@ -618,6 +638,9 @@ class Frame
             
         } else {
             $this->error(12,"Url not defined","The request url was not defined","handleApiUrls","The Url '" . $methodUrl . "' was not defined as function. Please check your definition scripts again!"); // URL isn' definded
+             $date = new DateTime();
+$date = $date->format("d.m.y H:i:s");
+        $this->log( $date . " --   Url ".$methodUrl . "  is not defined;  Params " . json_encode($_GET) . json_encode($_POST));
 			$this->output(null,"Error");
             $this->setHttpStatusCode(501);
 
