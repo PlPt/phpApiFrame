@@ -429,8 +429,8 @@ $date = $date->format("d.m.y H:i:s");
         for ($i = 0; $i < count($docComments); $i++) {
             
             $elem = $docComments[$i];
-            //print_r($elem);
-            if ($elem[0] == 375 || $elem[0] ==367) //if 375 dont work try 367  Comment found, scanning elements
+           if($this->debug) print_r($elem);			
+            if ($elem[0] == T_DOC_COMMENT) //Comment found, scanning elements
                 {
                 $arr = array(
                     $elem[1],
